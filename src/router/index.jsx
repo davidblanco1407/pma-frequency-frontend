@@ -2,20 +2,19 @@ import { createBrowserRouter } from 'react-router-dom'
 import Layout from '../components/Layout'
 import Home from '../pages/Home'
 import Login from '../pages/Login'
+import NotFound from '../pages/NotFound'
 
-// Páginas Admin
 import Dashboard from '../pages/admin/Dashboard'
 import Miembros from '../pages/admin/Miembros'
 import Solicitudes from '../pages/admin/Solicitudes'
 import Sanciones from '../pages/admin/Sanciones'
 
-// Páginas Miembro
 import Perfil from '../pages/miembro/Perfil'
 import Solicitud from '../pages/miembro/Solicitud'
 import EstadoSolicitudes from '../pages/miembro/EstadoSolicitudes'
 
-// Página 404
-import NotFound from '../pages/NotFound'
+import PrivateRoute from '../components/PrivateRoute'
+import AdminRoute from '../components/AdminRoute'
 
 export const router = createBrowserRouter([
   {
@@ -25,18 +24,64 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
 
-      // Admin
-      { path: 'admin/dashboard', element: <Dashboard /> },
-      { path: 'admin/miembros', element: <Miembros /> },
-      { path: 'admin/solicitudes', element: <Solicitudes /> },
-      { path: 'admin/sanciones', element: <Sanciones /> },
+      {
+        path: 'admin/dashboard',
+        element: (
+          <AdminRoute>
+            <Dashboard />
+          </AdminRoute>
+        )
+      },
+      {
+        path: 'admin/miembros',
+        element: (
+          <AdminRoute>
+            <Miembros />
+          </AdminRoute>
+        )
+      },
+      {
+        path: 'admin/solicitudes',
+        element: (
+          <AdminRoute>
+            <Solicitudes />
+          </AdminRoute>
+        )
+      },
+      {
+        path: 'admin/sanciones',
+        element: (
+          <AdminRoute>
+            <Sanciones />
+          </AdminRoute>
+        )
+      },
 
-      // Miembro
-      { path: 'miembro/perfil', element: <Perfil /> },
-      { path: 'miembro/solicitud', element: <Solicitud /> },
-      { path: 'miembro/estado-solicitudes', element: <EstadoSolicitudes /> },
+      {
+        path: 'miembro/perfil',
+        element: (
+          <PrivateRoute>
+            <Perfil />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'miembro/solicitud',
+        element: (
+          <PrivateRoute>
+            <Solicitud />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: 'miembro/estado-solicitudes',
+        element: (
+          <PrivateRoute>
+            <EstadoSolicitudes />
+          </PrivateRoute>
+        )
+      },
 
-      // Ruta 404
       { path: '*', element: <NotFound /> }
     ]
   }
