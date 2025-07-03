@@ -15,6 +15,9 @@ import EstadoSolicitudes from '../pages/miembro/EstadoSolicitudes'
 
 import PrivateRoute from '../components/PrivateRoute'
 import AdminRoute from '../components/AdminRoute'
+import About from '../pages/About'
+import RecuperarPassword from '../pages/RecuperarPassword'
+import CambiarPassword from '../pages/CambiarPassword'
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +26,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
+      { path: 'about', element: <About /> },
+      { path: 'recuperar-password', element: <RecuperarPassword /> },
+      { path: 'reset-password/:uid/:token', element: <RecuperarPassword /> },
 
       {
         path: 'admin/dashboard',
@@ -78,6 +84,16 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <EstadoSolicitudes />
+          </PrivateRoute>
+        )
+      },
+
+            // Cambiar contraseña (para todos los autenticados)
+      {
+        path: 'cambiar-password',
+        element: (
+          <PrivateRoute>
+            <CambiarPassword />
           </PrivateRoute>
         )
       },

@@ -27,10 +27,25 @@ export default function Header() {
 
         {/* Navegación */}
         <nav style={styles.nav}>
-          <Link to="/" style={styles.link}>Inicio</Link>
+          <Link
+  to={
+    !isAuthenticated
+      ? '/'
+      : isAdmin
+        ? '/admin/dashboard'
+        : '/miembro/perfil'
+  }
+  style={styles.link}
+>
+  Inicio
+</Link>
+<Link to="/about" style={styles.link}>Sobre PMA</Link>
+
+
 
           {!isAuthenticated && (
             <Link to="/login" style={styles.link}>Iniciar sesión</Link>
+            
           )}
 
           {isAuthenticated && (
@@ -58,6 +73,11 @@ export default function Header() {
                   <Link to="/miembro/estado-solicitudes" style={styles.link}>Mis Solicitudes</Link>
                 </>
               )}
+
+    {/* Agregado: cambiar contraseña */}
+    <Link to="/cambiar-password" style={{ color: '#fff' }}>
+      Cambiar contraseña
+    </Link>
 
               {/* Cerrar sesión */}
               <button
