@@ -5,9 +5,7 @@ import Login from '../pages/Login'
 import NotFound from '../pages/NotFound'
 
 import Dashboard from '../pages/admin/Dashboard'
-import Miembros from '../pages/admin/Miembros'
-import Solicitudes from '../pages/admin/Solicitudes'
-import Sanciones from '../pages/admin/Sanciones'
+import DetalleMiembro from '../components/admin/DetalleMiembro'
 
 import Perfil from '../pages/miembro/Perfil'
 import Solicitud from '../pages/miembro/Solicitud'
@@ -30,6 +28,7 @@ export const router = createBrowserRouter([
       { path: 'recuperar-password', element: <RecuperarPassword /> },
       { path: 'reset-password/:uid/:token', element: <RecuperarPassword /> },
 
+      // ---------------- ADMIN ----------------
       {
         path: 'admin/dashboard',
         element: (
@@ -39,30 +38,15 @@ export const router = createBrowserRouter([
         )
       },
       {
-        path: 'admin/miembros',
+        path: 'admin/miembros/:id',
         element: (
           <AdminRoute>
-            <Miembros />
-          </AdminRoute>
-        )
-      },
-      {
-        path: 'admin/solicitudes',
-        element: (
-          <AdminRoute>
-            <Solicitudes />
-          </AdminRoute>
-        )
-      },
-      {
-        path: 'admin/sanciones',
-        element: (
-          <AdminRoute>
-            <Sanciones />
+            <DetalleMiembro />
           </AdminRoute>
         )
       },
 
+      // ---------------- MIEMBRO ----------------
       {
         path: 'miembro/perfil',
         element: (
@@ -88,7 +72,7 @@ export const router = createBrowserRouter([
         )
       },
 
-            // Cambiar contraseña (para todos los autenticados)
+      // ---------------- GENERAL ----------------
       {
         path: 'cambiar-password',
         element: (
