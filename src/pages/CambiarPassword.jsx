@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { handleApiError } from '../services/handleApiError'
+import { useAuth } from '../context/AuthContext'
 
 export default function CambiarPassword() {
   const [actual, setActual] = useState('')
@@ -9,6 +11,9 @@ export default function CambiarPassword() {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const navigate = useNavigate()
+  const { isAdmin } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,15 +28,22 @@ export default function CambiarPassword() {
     setLoading(true)
 
     try {
-      const res = await api.post('/cambiar-password/', {
+      const res = await api.post('/miembros/cambiar-password/', {
         password_actual: actual,
         nueva_password: nueva,
         confirmar_password: confirmar
       })
+
       setMensaje(res.data?.mensaje || 'Contraseña cambiada correctamente.')
       setActual('')
       setNueva('')
       setConfirmar('')
+
+      // Redirige a página de inicio según el rol
+      setTimeout(() => {
+        navigate(isAdmin ? '/admin/dashboard' : '/miembro/perfil')
+      }, 1500)
+
     } catch (err) {
       setError(handleApiError(err) || 'No se pudo cambiar la contraseña.')
     } finally {

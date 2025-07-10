@@ -15,7 +15,7 @@ export default function RecuperarPassword() {
     setError('')
 
     try {
-      const res = await api.post('/enviar-reset-password/', { email })
+      const res = await api.post('/miembros/enviar-reset-password/', { email })
       setMensaje(res.data?.mensaje || 'Correo enviado con instrucciones para restablecer tu contraseña.')
     } catch (err) {
       setError(handleApiError(err) || 'No se pudo procesar la solicitud.')

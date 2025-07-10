@@ -44,12 +44,19 @@ export default function Perfil() {
         <h3 id="info-personal" style={styles.subtitle}>Información personal</h3>
         <p><strong>Nombre:</strong> {miembro.nombre_completo}</p>
         <p><strong>Email:</strong> {miembro.email}</p>
-        <p><strong>Teléfono:</strong> {miembro.telefono}</p>
+        <p><strong>Teléfono:</strong> {miembro.telefono || 'No registrado'}</p>
+        <p><strong>País:</strong> {miembro.pais || 'No especificado'}</p>
       </section>
 
       <section aria-labelledby="estado-cuenta" style={styles.card}>
         <h3 id="estado-cuenta" style={styles.subtitle}>Estado de tu cuenta</h3>
-        <p style={{ color: estadoColor, fontWeight: 'bold' }}>{estado}</p>
+        <p
+          style={{ color: estadoColor, fontWeight: 'bold' }}
+          role="status"
+          aria-label={`Estado de la cuenta: ${estado}`}
+        >
+          {estado}
+        </p>
       </section>
 
       <section style={styles.links}>

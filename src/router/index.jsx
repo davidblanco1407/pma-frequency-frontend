@@ -6,6 +6,8 @@ import NotFound from '../pages/NotFound'
 
 import Dashboard from '../pages/admin/Dashboard'
 import DetalleMiembro from '../components/admin/DetalleMiembro'
+import PanelSolicitudes from '../pages/admin/Solicitudes'
+
 
 import Perfil from '../pages/miembro/Perfil'
 import Solicitud from '../pages/miembro/Solicitud'
@@ -42,6 +44,14 @@ export const router = createBrowserRouter([
         element: (
           <AdminRoute>
             <DetalleMiembro />
+          </AdminRoute>
+        )
+      },
+      {
+        path: 'admin/solicitudes',
+        element: (
+          <AdminRoute>
+            <PanelSolicitudes />
           </AdminRoute>
         )
       },

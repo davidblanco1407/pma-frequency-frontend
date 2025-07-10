@@ -8,33 +8,39 @@ import ModalSancion from './ModalSancion'
 export default function DetalleMiembro() {
   const { id } = useParams()
   const navigate = useNavigate()
+
   const [miembro, setMiembro] = useState(null)
+  const [sanciones, setSanciones] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [accionLoading, setAccionLoading] = useState(false)
   const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false)
   const [mostrarModalSancion, setMostrarModalSancion] = useState(false)
 
-  useEffect(() => {
-    const fetchMiembro = async () => {
-      try {
-        const res = await api.get(`/miembros/${id}/`)
-        setMiembro(res.data)
-      } catch (err) {
-        setError(handleApiError(err))
-      } finally {
-        setLoading(false)
-      }
+  const cargarDatos = async () => {
+    try {
+      const [resMiembro, resSanciones] = await Promise.all([
+        api.get(`/miembros/miembros/${id}/`),
+        api.get(`/miembros/sanciones/?miembro=${id}`),
+      ])
+      setMiembro(resMiembro.data)
+      setSanciones(resSanciones.data.results || [])
+    } catch (err) {
+      setError(handleApiError(err))
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchMiembro()
+  useEffect(() => {
+    cargarDatos()
   }, [id])
 
   const actualizarEstado = async ({ activo, puede_volver }) => {
     if (!miembro) return
     setAccionLoading(true)
     try {
-      const res = await api.put(`/miembros/${miembro.id}/`, {
+      const res = await api.put(`/miembros/miembros/${miembro.id}/`, {
         ...miembro,
         activo,
         puede_volver,
@@ -82,55 +88,62 @@ export default function DetalleMiembro() {
         <p><strong>Fecha de registro:</strong> {new Date(miembro.fecha_registro).toLocaleString()}</p>
       </section>
 
-      <section style={styles.acciones}>
-        <h3>Acciones</h3>
-
-        <div style={styles.botones}>
-          <button
-            style={styles.boton}
-            onClick={() => setMostrarModalEdicion(true)}
-          >
-            ✏️ Editar
-          </button>
-
-          <button
-            style={styles.boton}
-            onClick={() => setMostrarModalSancion(true)}
-          >
-            ⚠️ Sancionar
-          </button>
-
-          {miembro.activo && (
-            <>
-              <button
-                style={{ ...styles.boton, backgroundColor: '#ffcc00' }}
-                onClick={desactivarTemporal}
-                disabled={accionLoading}
-              >
-                💤 Desactivar
-              </button>
-
-              <button
-                style={{ ...styles.boton, backgroundColor: '#ff4d4d' }}
-                onClick={bloquearMiembro}
-                disabled={accionLoading}
-              >
-                🚫 Bloquear
-              </button>
-            </>
-          )}
-
-          {!miembro.activo && miembro.puede_volver && (
-            <button
-              style={{ ...styles.boton, backgroundColor: '#28a745' }}
-              onClick={reactivarMiembro}
-              disabled={accionLoading}
-            >
-              ✅ Reactivar
-            </button>
-          )}
-        </div>
+      {/* 🔥 Sanciones */}
+      <section style={styles.card}>
+        <h3>Sanciones</h3>
+        {sanciones.length === 0 ? (
+          <p>Este miembro no tiene sanciones registradas.</p>
+        ) : (
+          <ul>
+            {sanciones.map((s, i) => (
+              <li key={i} style={{ marginBottom: '0.8rem' }}>
+                <strong>{s.fecha_inicio}:</strong> {s.motivo} —{' '}
+                {s.duracion_dias ? `${s.duracion_dias} días` : 'Indefinida'}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
+
+      {/* Acciones, solo si NO está bloqueado permanentemente */}
+      {!(miembro.activo === false && miembro.puede_volver === false) && (
+        <section style={styles.acciones}>
+          <h3>Acciones</h3>
+          <div style={styles.botones}>
+            <button style={styles.boton} onClick={() => setMostrarModalEdicion(true)}>✏️ Editar</button>
+            <button style={styles.boton} onClick={() => setMostrarModalSancion(true)}>⚠️ Sancionar</button>
+
+            {miembro.activo && (
+              <>
+                <button
+                  style={{ ...styles.boton, backgroundColor: '#ffcc00' }}
+                  onClick={desactivarTemporal}
+                  disabled={accionLoading}
+                >
+                  💤 Desactivar
+                </button>
+                <button
+                  style={{ ...styles.boton, backgroundColor: '#ff4d4d' }}
+                  onClick={bloquearMiembro}
+                  disabled={accionLoading}
+                >
+                  🚫 Bloquear
+                </button>
+              </>
+            )}
+
+            {!miembro.activo && miembro.puede_volver && (
+              <button
+                style={{ ...styles.boton, backgroundColor: '#28a745' }}
+                onClick={reactivarMiembro}
+                disabled={accionLoading}
+              >
+                ✅ Reactivar
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       <button onClick={() => navigate(-1)} style={styles.volver}>← Volver</button>
 
@@ -139,7 +152,7 @@ export default function DetalleMiembro() {
         <ModalMiembro
           visible={mostrarModalEdicion}
           onClose={() => setMostrarModalEdicion(false)}
-          miembro={miembro}
+          miembroActual={miembro}
           onGuardado={(actualizado) => setMiembro(actualizado)}
         />
       )}
@@ -149,6 +162,8 @@ export default function DetalleMiembro() {
           visible={mostrarModalSancion}
           onClose={() => setMostrarModalSancion(false)}
           miembroId={miembro.id}
+          nombreMiembro={miembro.nombre_completo}
+          onSuccess={cargarDatos}
         />
       )}
     </main>

@@ -6,6 +6,8 @@ import { api } from '../../services/api'
 import { handleApiError } from '../../services/handleApiError'
 
 export default function ModalMiembro({ visible, onClose, miembroActual, onSuccess }) {
+  const esEdicion = !!miembroActual
+
   const [form, setForm] = useState({
     nombre_completo: '',
     email: '',
@@ -16,27 +18,29 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
   const [loading, setLoading] = useState(false)
   const [paises, setPaises] = useState([])
 
+  // Cargar lista de países + precargar datos si estamos editando
   useEffect(() => {
-    const lista = getNames()
-    setPaises(lista)
+    setPaises(getNames())
 
-    if (miembroActual) {
-      setForm({
-        nombre_completo: miembroActual.nombre_completo || '',
-        email: miembroActual.email || '',
-        telefono: miembroActual.telefono || '',
-        pais: miembroActual.pais || '',
-      })
-    } else {
-      setForm({
-        nombre_completo: '',
-        email: '',
-        telefono: '',
-        pais: '',
-      })
+    if (visible) {
+      if (esEdicion) {
+        setForm({
+          nombre_completo: miembroActual?.nombre_completo || '',
+          email: miembroActual?.email || '',
+          telefono: miembroActual?.telefono || '',
+          pais: miembroActual?.pais || '',
+        })
+      } else {
+        setForm({
+          nombre_completo: '',
+          email: '',
+          telefono: '',
+          pais: '',
+        })
+      }
+      setError('')
     }
-    setError('')
-  }, [miembroActual])
+  }, [visible, miembroActual])
 
   if (!visible) return null
 
@@ -55,17 +59,17 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
     setError('')
 
     try {
-      if (miembroActual) {
-        await api.put(`/miembros/${miembroActual.id}/`, form)
-      } else {
-        await api.post('/miembros/', form)
-      }
+      const endpoint = esEdicion
+        ? `/miembros/miembros/${miembroActual.id}/`
+        : '/miembros/miembros/'
 
-      onSuccess()
+      const method = esEdicion ? api.put : api.post
+      const res = await method(endpoint, form)
+
+      onSuccess?.(res.data)
       onClose()
     } catch (err) {
-      const mensaje = handleApiError(err) || 'No se pudo guardar el miembro'
-      setError(mensaje)
+      setError(handleApiError(err) || 'No se pudo guardar el miembro')
     } finally {
       setLoading(false)
     }
@@ -75,11 +79,10 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
     <div role="dialog" aria-modal="true" aria-labelledby="modal-titulo" style={styles.overlay}>
       <div style={styles.modal}>
         <h2 id="modal-titulo" style={styles.title}>
-          {miembroActual ? 'Editar miembro' : 'Registrar nuevo miembro'}
+          {esEdicion ? 'Editar miembro' : 'Registrar nuevo miembro'}
         </h2>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-
           {/* Nombre */}
           <div style={styles.group}>
             <label htmlFor="nombre">Nombre completo</label>
@@ -91,11 +94,7 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
               onChange={handleChange}
               required
               style={styles.input}
-              aria-describedby="nombre-help"
             />
-            <small id="nombre-help" style={styles.help}>
-              Nombre real del miembro.
-            </small>
           </div>
 
           {/* Correo */}
@@ -109,12 +108,13 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
               onChange={handleChange}
               required
               style={styles.input}
-              aria-describedby="email-help"
-              disabled={!!miembroActual}
+              disabled={esEdicion}
             />
-            <small id="email-help" style={styles.help}>
-              Este correo será usado para el acceso.
-            </small>
+            {esEdicion && (
+              <small style={styles.help}>
+                El correo no puede modificarse.
+              </small>
+            )}
           </div>
 
           {/* Teléfono */}
@@ -129,7 +129,6 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
               style={styles.phone}
               required
             />
-            <small style={styles.help}>Incluye el código de país si es necesario.</small>
           </div>
 
           {/* País */}
@@ -148,7 +147,6 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
                 <option key={i} value={p}>{p}</option>
               ))}
             </select>
-            <small style={styles.help}>País de residencia del miembro.</small>
           </div>
 
           {/* Error */}
@@ -157,7 +155,7 @@ export default function ModalMiembro({ visible, onClose, miembroActual, onSucces
           {/* Botones */}
           <div style={styles.actions}>
             <button type="submit" disabled={loading} style={styles.button}>
-              {loading ? 'Guardando...' : miembroActual ? 'Actualizar' : 'Registrar'}
+              {loading ? 'Guardando...' : esEdicion ? 'Actualizar' : 'Registrar'}
             </button>
             <button type="button" onClick={onClose} style={styles.cancel}>
               Cancelar

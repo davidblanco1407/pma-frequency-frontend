@@ -24,7 +24,7 @@ export default function ResetPasswordConfirm() {
     setLoading(true)
 
     try {
-      const res = await api.post(`/reset-password/${uid}/${token}/`, {
+      const res = await api.post(`/miembros/reset-password/${uid}/${token}/`, {
         nueva_password: password,
         confirmar_password: confirmar
       })

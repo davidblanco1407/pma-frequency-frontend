@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { obtenerSolicitudes } from '../../services/solicitudService'
 import { handleApiError } from '../../services/handleApiError'
 
@@ -7,11 +8,13 @@ export default function EstadoSolicitudes() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await obtenerSolicitudes()
-        setSolicitudes(res.data)
+        setSolicitudes(res.data.results || [])
       } catch (err) {
         setError(handleApiError(err) || 'No se pudieron cargar tus solicitudes.')
       } finally {
@@ -25,6 +28,16 @@ export default function EstadoSolicitudes() {
   return (
     <main style={styles.container}>
       <h2 style={styles.title}>Mis solicitudes de corrección</h2>
+
+      <div style={styles.botonContainer}>
+        <button
+          onClick={() => navigate('/miembro/solicitud')}
+          style={styles.boton}
+          aria-label="Crear nueva solicitud de corrección"
+        >
+          ➕ Nueva solicitud
+        </button>
+      </div>
 
       {error && <p style={styles.error}>{error}</p>}
       {loading && <p style={styles.loading}>Cargando...</p>}
@@ -69,8 +82,22 @@ const styles = {
   },
   title: {
     fontSize: '1.8rem',
-    marginBottom: '2rem',
+    marginBottom: '1rem',
     textAlign: 'center',
+  },
+  botonContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '1.5rem',
+  },
+  boton: {
+    padding: '0.6rem 1.2rem',
+    backgroundColor: '#007bff',
+    color: '#fff',
+    fontWeight: 'bold',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
   },
   error: {
     color: 'red',

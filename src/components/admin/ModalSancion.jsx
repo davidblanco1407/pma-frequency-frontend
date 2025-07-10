@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { api } from '../../services/api'
 import { handleApiError } from '../../services/handleApiError'
 
@@ -7,6 +7,21 @@ export default function ModalSancion({ visible, onClose, miembroId, nombreMiembr
   const [duracion, setDuracion] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [nombre, setNombre] = useState(nombreMiembro || '')
+
+  useEffect(() => {
+    const fetchNombre = async () => {
+      if (!nombreMiembro && miembroId) {
+        try {
+          const res = await api.get(`/miembros/miembros/${miembroId}/`)
+          setNombre(res.data?.nombre_completo || 'miembro')
+        } catch (err) {
+          setNombre('miembro')
+        }
+      }
+    }
+    fetchNombre()
+  }, [miembroId, nombreMiembro])
 
   if (!visible) return null
 
@@ -16,14 +31,20 @@ export default function ModalSancion({ visible, onClose, miembroId, nombreMiembr
     setError('')
 
     try {
+      if (duracion && parseInt(duracion, 10) < 1) {
+        setError('La duración debe ser al menos 1 día o dejarse en blanco.')
+        setLoading(false)
+        return
+      }
+
       const payload = {
         motivo,
         miembro: miembroId,
         duracion_dias: duracion ? parseInt(duracion, 10) : null,
       }
 
-      await api.post('/sanciones/', payload)
-      onSuccess?.()  // si se definió onSuccess, se ejecuta
+      await api.post('/miembros/sanciones/', payload)
+      onSuccess?.()
       onClose()
     } catch (err) {
       setError(handleApiError(err))
@@ -36,7 +57,7 @@ export default function ModalSancion({ visible, onClose, miembroId, nombreMiembr
     <div style={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="titulo-modal-sancion">
       <div style={styles.modal}>
         <h2 id="titulo-modal-sancion" style={{ marginBottom: '1rem' }}>
-          Nueva sanción para {nombreMiembro}
+          {`Nueva sanción para ${nombre || 'miembro'}`}
         </h2>
 
         <form onSubmit={handleSubmit}>

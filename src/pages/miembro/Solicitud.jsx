@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { enviarSolicitud } from '../../services/solicitudService'
 import { handleApiError } from '../../services/handleApiError'
 
@@ -7,6 +8,8 @@ export default function Solicitud() {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -21,9 +24,15 @@ export default function Solicitud() {
     setLoading(true)
 
     try {
-      const res = await enviarSolicitud({ descripcion })
-      setMensaje('Solicitud enviada correctamente. Puedes consultar el estado en tu perfil.')
+      await enviarSolicitud({ descripcion })
+      setMensaje('Solicitud enviada correctamente.')
       setDescripcion('')
+
+      // ⏳ Pequeña pausa opcional antes de redirigir (solo si quieres que vea el mensaje)
+      setTimeout(() => {
+        navigate('/miembro/estado-solicitudes')
+      }, 1000)
+
     } catch (err) {
       setError(handleApiError(err) || 'No se pudo enviar la solicitud.')
     } finally {

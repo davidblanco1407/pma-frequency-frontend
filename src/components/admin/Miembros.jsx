@@ -17,33 +17,33 @@ export default function Miembros({ reloadTrigger }) {
     fecha_hasta: '',
   })
 
-  const [miembros, setMiembros] = useState([])  // 👈 Siempre array
-  const [paginaActual, setPaginaActual] = useState('/miembros/')
+  const [miembros, setMiembros] = useState([])
+  const [paginaActual, setPaginaActual] = useState('/miembros/miembros/')
   const [next, setNext] = useState(null)
   const [previous, setPrevious] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [mostrarModal, setMostrarModal] = useState(false)
 
-  const hayFiltros = Object.values(filtros).some(val => val?.toString().trim() !== '')
+  // 🔧 Mejora: lógica de filtros más precisa
+  const hayFiltros = Object.values(filtros).some(val => val && String(val).trim().length > 0)
 
+  // 🔥 Cargar miembros siempre que reloadTrigger cambie
   useEffect(() => {
-    if (!hayFiltros) {
-      cargarMiembros()
-    }
+    cargarMiembros()
   }, [reloadTrigger])
 
-  const cargarMiembros = async (url = '/miembros/') => {
+  const cargarMiembros = async (url = '/miembros/miembros/') => {
     setLoading(true)
     try {
       const res = await api.get(url)
-      setMiembros(res.data?.results ?? []) // 👈 Protección aquí
+      setMiembros(res.data?.results ?? [])
       setNext(res.data?.next ?? null)
       setPrevious(res.data?.previous ?? null)
       setPaginaActual(url)
     } catch (err) {
       setError(handleApiError(err))
-      setMiembros([]) // 👈 Si falla, asegurar array vacío
+      setMiembros([])
     } finally {
       setLoading(false)
     }
@@ -54,7 +54,7 @@ export default function Miembros({ reloadTrigger }) {
     setLoading(true)
     try {
       const res = await api.post('/miembros/filtrar/', filtros)
-      setMiembros(res.data ?? []) // 👈 Asegurar array
+      setMiembros(res.data ?? [])
       setNext(null)
       setPrevious(null)
     } catch (err) {
@@ -109,6 +109,8 @@ export default function Miembros({ reloadTrigger }) {
       </form>
 
       <hr style={{ margin: '2rem 0' }} />
+
+      <h2>Miembros</h2>
 
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
         <button

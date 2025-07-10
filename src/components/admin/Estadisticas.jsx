@@ -1,54 +1,90 @@
-import PropTypes from 'prop-types'
+import { useState, useEffect } from 'react'
+import { api } from '../../services/api'
+import { handleApiError } from '../../services/handleApiError'
+import { FaUserCheck, FaUserClock, FaUserSlash } from 'react-icons/fa'
 
-export default function Estadisticas({ datos }) {
-  if (!datos) {
-    return <p>Cargando estadísticas...</p>
-  }
+export default function Estadisticas() {
+  const [datos, setDatos] = useState(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const cargarEstadisticas = async () => {
+      try {
+        const res = await api.get('/miembros/estadisticas/')
+        setDatos(res.data)
+      } catch (err) {
+        setError(handleApiError(err))
+      }
+    }
+
+    cargarEstadisticas()
+  }, [])
+
+  if (error) return <p style={{ color: 'red' }}>{error}</p>
+  if (!datos) return <p>Cargando estadísticas...</p>
 
   return (
-    <div style={styles.contenedor}>
-      <div style={styles.tarjeta}>
-        <h3>Activos</h3>
-        <p style={styles.numero}>{datos.activos}</p>
-      </div>
-      <div style={styles.tarjeta}>
-        <h3>Inactivos</h3>
-        <p style={styles.numero}>{datos.inactivos}</p>
-      </div>
-      <div style={styles.tarjeta}>
-        <h3>Bloqueados</h3>
-        <p style={styles.numero}>{datos.bloqueados}</p>
-      </div>
-    </div>
+    <section aria-label="Estadísticas de miembros" style={styles.contenedor}>
+      <TarjetaEstadistica
+        icono={<FaUserCheck size={28} color="#28a745" />}
+        label="Activos"
+        valor={datos.activos}
+      />
+      <TarjetaEstadistica
+        icono={<FaUserClock size={28} color="#ffc107" />}
+        label="Inactivos"
+        valor={datos.inactivos}
+      />
+      <TarjetaEstadistica
+        icono={<FaUserSlash size={28} color="#dc3545" />}
+        label="Bloqueados"
+        valor={datos.bloqueados}
+      />
+    </section>
   )
 }
 
-Estadisticas.propTypes = {
-  datos: PropTypes.shape({
-    activos: PropTypes.number,
-    inactivos: PropTypes.number,
-    bloqueados: PropTypes.number
-  })
+function TarjetaEstadistica({ icono, label, valor }) {
+  return (
+    <div role="region" aria-label={`Miembros ${label}`} style={styles.tarjeta}>
+      <div style={styles.icono}>{icono}</div>
+      <h4 style={styles.titulo}>{label}</h4>
+      <p style={styles.valor}>{valor}</p>
+    </div>
+  )
 }
 
 const styles = {
   contenedor: {
     display: 'flex',
-    gap: '1rem',
+    gap: '1.5rem',
     justifyContent: 'space-between',
-    marginBottom: '2rem'
+    flexWrap: 'wrap',
+    marginBottom: '2rem',
   },
   tarjeta: {
     flex: 1,
-    padding: '1rem',
-    borderRadius: '8px',
-    backgroundColor: '#f1f1f1',
+    minWidth: '200px',
+    padding: '1.2rem',
+    borderRadius: '10px',
+    backgroundColor: '#fff',
+    boxShadow: '0 3px 8px rgba(0,0,0,0.08)',
     textAlign: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    transition: 'transform 0.2s ease',
   },
-  numero: {
-    fontSize: '2rem',
+  icono: {
+    marginBottom: '0.5rem',
+  },
+  titulo: {
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    margin: '0.5rem 0',
+    color: '#333',
+  },
+  valor: {
+    fontSize: '2.2rem',
+    fontWeight: 'bold',
     margin: 0,
-    color: '#007bff'
-  }
+    color: '#007bff',
+  },
 }
